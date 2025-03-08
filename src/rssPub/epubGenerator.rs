@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use epub_builder::{Toc, TocElement};
-use crate::data::epub_data::EpubData;
+use crate::rssPub::epub_data::EpubData;
 
 fn generate_epub(data:HashMap<String,Vec<EpubData>>) ->epub_builder::Result<Vec<u8>>{
 
@@ -16,9 +16,9 @@ fn generate_epub(data:HashMap<String,Vec<EpubData>>) ->epub_builder::Result<Vec<
         for (key,value) in data{
             let articles =key.as_str();
             let sd=Toc::new().
-                add(TocElement::new(key+".xhtml", articles));
+                add(TocElement::new(".xhtml", articles));
             for item in value{
-                builder.add_content(epub_builder::EpubContent::new(format!("{}.xhtml",item.title), item.content.content.as_bytes()).title(item.title))?;
+                //builder.add_content(epub_builder::EpubContent::new(format!("{}.xhtml",item.title), item.content.content.as_bytes()).title(item.title))?;
             }
 
 

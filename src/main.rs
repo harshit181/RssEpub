@@ -2,10 +2,12 @@ use dioxus::prelude::*;
 
 use components::Navbar;
 use views::{ Home};
+use crate::rssPub::RssFetcher::get_content;
+use crate::rssPub::scrapper::get_all_content;
 
 mod components;
 mod views;
-mod data;
+mod rssPub;
 
 #[derive(Debug, Clone, Routable, PartialEq)]
 #[rustfmt::skip]
@@ -18,10 +20,17 @@ const FAVICON: Asset = asset!("/assets/favicon.ico");
 const MAIN_CSS: Asset = asset!("/assets/styling/main.css");
 const TAILWIND_CSS: Asset = asset!("/assets/tailwind.css");
 
-fn main() {
-    dioxus::launch(App);
-}
+// fn main() {
+//     dioxus::launch(App);
+// }
 
+fn main() {
+    let sd:Vec<rss::Item>=get_content("https://www.livemint.com/rss/money",1);
+    for ss in sd{
+        let ssd=get_all_content(&ss).unwrap();
+        println!("{}",ssd.content.content)
+    }
+}
 #[component]
 fn App() -> Element {
     // Build cool things ✌️
