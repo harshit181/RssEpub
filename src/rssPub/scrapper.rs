@@ -1,4 +1,5 @@
 use dom_smoothie::{Article, CandidateSelectMode, Config, Readability, ReadabilityError, TextMode};
+use reqwest::blocking::Client;
 use crate::rssPub::epub_data::EpubData;
 use scraper::{Html, Selector};
 pub fn get_all_content(rss_item:&rss::Item) ->Result<EpubData,&str>{
@@ -35,7 +36,8 @@ pub fn get_all_content(rss_item:&rss::Item) ->Result<EpubData,&str>{
 }
 
 fn get_web_page_content(url:&str) -> Result<String, &str> {
-    let response = reqwest::blocking::get(url).unwrap().text().unwrap();
+    let client=Client::builder().use_rustls_tls().build().unwrap();
+    let response = client.get(url).send().unwrap().text().unwrap();
     let cfg = Config {
         max_elements_to_parse: 9000,
         text_mode:TextMode::Formatted,
@@ -48,7 +50,7 @@ fn get_web_page_content(url:&str) -> Result<String, &str> {
         Ok(mut readability) => {
             let articles = readability.parse();
             match articles {
-                Ok(article) => {Ok(article.content.to_string())}
+                Ok(article) => {Ok(article.text_content.to_string())}
                 Err(sd) => {
                     println!("{}",sd);
                     Err("error while parsing")}
