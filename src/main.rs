@@ -1,9 +1,12 @@
+use std::fs;
 use dioxus::prelude::*;
 
 use components::Navbar;
 use views::{ Home};
-use crate::rssPub::RssFetcher::get_content;
+use crate::rssPub::rss_fetcher::get_content;
 use crate::rssPub::scrapper::get_all_content;
+use crate::rssPub::db_loader::*;
+use crate::rssPub::loader::load_data;
 
 mod components;
 mod views;
@@ -22,14 +25,11 @@ const TAILWIND_CSS: Asset = asset!("/assets/tailwind.css");
 
 // fn main() {
 //     dioxus::launch(App);
+//      init_data();
 // }
 
 fn main() {
-    let sd:Vec<rss::Item>=get_content("https://www.livemint.com/rss/money",1);
-    for ss in sd{
-        let ssd=get_all_content(&ss).unwrap();
-        println!("{}",ssd.content.content)
-    }
+    load_data();
 }
 #[component]
 fn App() -> Element {

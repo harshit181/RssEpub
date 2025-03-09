@@ -1,36 +1,44 @@
-use dom_smoothie::{Article, Config, Readability, ReadabilityError};
+use dom_smoothie::{Article, CandidateSelectMode, Config, Readability, ReadabilityError, TextMode};
 use crate::rssPub::epub_data::EpubData;
 use scraper::{Html, Selector};
 pub fn get_all_content(rss_item:&rss::Item) ->Result<EpubData,&str>{
         println!("partial feed");
         if let Some(link) = rss_item.link() {
             let cons = get_web_page_content(link);
-            let con=match cons {
-                Ok(asw) => {asw}
+            let con:Option<String>=match cons {
+                Ok(asw) => {Some(asw)}
                 Err(x) => {
-                    println!("{}",x);
-                    panic!()}
+                    println!("{} --- {}", x, link);
+                    None
+                }
             };
             let titl=rss_item.title().unwrap().to_string();
-            let s=match rss_item.content() {
+            let content_from_rss =match rss_item.content() {
                 None => {""}
                 Some(s) => {s}
             };
-            let epub_data = EpubData {
-                title:titl,
-                content_text:s.to_string(),
-                content:con
-            };
-           return Ok(epub_data);
+            match con{
+                None => {}
+                Some(ads) => {
+                    let epub_data = EpubData {
+                        title:titl,
+                        content_text: content_from_rss.to_string(),
+                        content:ads
+                    };
+                    return Ok(epub_data);
+                }
+            }
+
         }
         return Err("unable to process");
 
 }
 
-fn get_web_page_content(url:&str) -> Result<Article, &str> {
+fn get_web_page_content(url:&str) -> Result<String, &str> {
     let response = reqwest::blocking::get(url).unwrap().text().unwrap();
     let cfg = Config {
         max_elements_to_parse: 9000,
+        text_mode:TextMode::Formatted,
         ..Default::default()
     };
     let asd=Html::parse_document(&response);
@@ -40,7 +48,7 @@ fn get_web_page_content(url:&str) -> Result<Article, &str> {
         Ok(mut readability) => {
             let articles = readability.parse();
             match articles {
-                Ok(article) => {Ok(article)}
+                Ok(article) => {Ok(article.content.to_string())}
                 Err(sd) => {
                     println!("{}",sd);
                     Err("error while parsing")}
